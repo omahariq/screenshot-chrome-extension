@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=400">
+  <title>Exemplar Capture</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- ===== SETUP VIEW ===== -->
+  <div id="view-setup" class="view">
+    <form id="setup-form" class="setup-form" autocomplete="off">
+      <!-- Mode toggle -->
+      <fieldset class="field-group">
+        <legend>Capture Mode</legend>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn active" data-mode="flow">Flow</button>
+          <button type="button" class="toggle-btn" data-mode="set">Set</button>
+        </div>
+      </fieldset>
+
+      <!-- Version -->
+      <div class="field">
+        <label for="input-version">Version <span class="required">*</span></label>
+        <input type="text" id="input-version" placeholder="e.g. v3.12.0" required>
+      </div>
+
+      <!-- Date -->
+      <div class="field">
+        <label for="input-date">Date</label>
+        <input type="date" id="input-date">
+      </div>
+
+      <!-- Flow / Set name -->
+      <div class="field">
+        <label for="input-flow-set-name" id="label-flow-set">Flow Name <span class="required">*</span></label>
+        <input type="text" id="input-flow-set-name" placeholder="e.g. Checkout Flow" required>
+      </div>
+
+      <!-- Folder picker (optional) -->
+      <div class="field">
+        <label>Save Location</label>
+        <div class="folder-row">
+          <button type="button" id="btn-pick-folder" class="btn btn-secondary btn-sm">Choose Folder</button>
+          <span id="folder-path-display" class="folder-path">~/Downloads/Exemplars/</span>
+        </div>
+      </div>
+
+      <button type="submit" id="btn-start-session" class="btn btn-primary btn-full">Start Session</button>
+    </form>
+  </div>
+
+  <!-- ===== CAPTURE VIEW ===== -->
+  <div id="view-capture" class="view hidden">
+    <!-- Session banner -->
+    <div id="session-banner" class="session-banner">
+      <div class="banner-row">
+        <span class="badge" id="badge-mode">Flow</span>
+        <span class="banner-text" id="banner-name">—</span>
+      </div>
+      <div class="banner-row">
+        <span class="banner-detail" id="banner-version">—</span>
+        <span class="banner-detail" id="banner-state">—</span>
+        <span class="banner-detail" id="banner-date">—</span>
+      </div>
+    </div>
+
+    <!-- Step / Index counter -->
+    <div class="counter-row">
+      <span id="counter-label">Step</span>
+      <span id="counter-value" class="counter-value">1</span>
+      <button type="button" id="btn-counter-dec" class="btn btn-icon" title="Decrease">−</button>
+      <button type="button" id="btn-counter-inc" class="btn btn-icon" title="Increase">+</button>
+    </div>
+
+    <!-- Capture button -->
+    <button type="button" id="btn-capture" class="btn btn-capture">Capture</button>
+
+    <!-- Status message -->
+    <div id="capture-status" class="status-msg hidden"></div>
+
+    <!-- Page name prompt with login state toggle -->
+    <div id="page-name-prompt" class="prompt-box hidden">
+      <div class="prompt-header">
+        <label for="input-page-name">Name this page:</label>
+        <div class="toggle-group toggle-group-sm">
+          <button type="button" class="toggle-btn capture-state-btn" data-state="logged-in">In</button>
+          <button type="button" class="toggle-btn capture-state-btn active" data-state="logged-out">Out</button>
+        </div>
+      </div>
+      <input type="text" id="input-page-name" placeholder="e.g. Checkout Page">
+      <div class="prompt-actions">
+        <button type="button" id="btn-confirm-name" class="btn btn-primary btn-sm">Confirm</button>
+      </div>
+    </div>
+
+    <!-- Description input -->
+    <div id="description-section" class="description-section hidden">
+      <div class="field">
+        <label for="input-description">Description</label>
+        <div class="desc-mode-row">
+          <button type="button" class="desc-mode-btn active" data-desc="short">Short</button>
+          <button type="button" class="desc-mode-btn" data-desc="compliance">Compliance</button>
+          <button type="button" class="desc-mode-btn" data-desc="verbose">Verbose</button>
+        </div>
+        <textarea id="input-description" rows="2" placeholder="Page purpose + main CTA"></textarea>
+      </div>
+      <button type="button" id="btn-save-capture" class="btn btn-primary btn-full">Save Capture</button>
+    </div>
+
+    <!-- Duplicate warning -->
+    <div id="duplicate-warning" class="warning-box hidden">
+      <p>This page was already captured as "<span id="dup-page-name"></span>".</p>
+      <div class="prompt-actions">
+        <button type="button" id="btn-dup-proceed" class="btn btn-warning btn-sm">Capture Anyway</button>
+        <button type="button" id="btn-dup-cancel" class="btn btn-secondary btn-sm">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Last capture info -->
+    <div id="last-capture" class="last-capture hidden">
+      <h3>Last Capture</h3>
+      <div class="last-capture-info">
+        <img id="last-capture-thumb" class="thumbnail" alt="Last capture thumbnail">
+        <div class="last-capture-details">
+          <span id="last-capture-name" class="detail-text"></span>
+          <span id="last-capture-file" class="detail-file"></span>
+        </div>
+      </div>
+      <button type="button" id="btn-edit-last" class="btn btn-secondary btn-sm">Edit Last</button>
+    </div>
+
+    <!-- Bottom actions -->
+    <div class="bottom-actions">
+      <button type="button" id="btn-toggle-state" class="btn btn-secondary btn-sm">Toggle Login State</button>
+      <button type="button" id="btn-end-session" class="btn btn-danger btn-sm">End Session</button>
+    </div>
+  </div>
+
+  <!-- ===== EDIT VIEW ===== -->
+  <div id="view-edit" class="view hidden">
+    <header class="app-header">
+      <h1>Edit Last Capture</h1>
+    </header>
+
+    <form id="edit-form" autocomplete="off">
+      <div class="field">
+        <label for="edit-page-name">Page Name</label>
+        <input type="text" id="edit-page-name">
+      </div>
+
+      <div class="field">
+        <label for="edit-description">Description</label>
+        <textarea id="edit-description" rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="edit-step-index">Step / Index</label>
+        <input type="number" id="edit-step-index" min="1">
+      </div>
+
+      <fieldset class="field-group">
+        <legend>Login State</legend>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn edit-state-btn" data-state="logged-in">Logged In</button>
+          <button type="button" class="toggle-btn edit-state-btn" data-state="logged-out">Logged Out</button>
+        </div>
+      </fieldset>
+
+      <div class="edit-actions">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="button" id="btn-cancel-edit" class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <canvas id="stitch-canvas" style="display:none;"></canvas>
+  <script src="../vendor/jspdf.umd.min.js"></script>
+  <script src="popup.js" type="module"></script>
+</body>
+</html>
