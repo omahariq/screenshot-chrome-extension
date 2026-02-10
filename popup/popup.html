@@ -84,13 +84,13 @@
       <div class="prompt-header">
         <label for="input-page-name">Name this page:</label>
         <div class="toggle-group toggle-group-sm">
-          <button type="button" class="toggle-btn capture-state-btn" data-state="logged-in">In</button>
-          <button type="button" class="toggle-btn capture-state-btn active" data-state="logged-out">Out</button>
+          <button type="button" class="toggle-btn capture-state-btn" data-state="logged-in">Logged In</button>
+          <button type="button" class="toggle-btn capture-state-btn active" data-state="logged-out">Logged Out</button>
         </div>
       </div>
       <input type="text" id="input-page-name" placeholder="e.g. Checkout Page">
       <div class="prompt-actions">
-        <button type="button" id="btn-confirm-name" class="btn btn-primary btn-sm">Confirm</button>
+        <button type="button" id="btn-confirm-name" class="btn btn-primary">Confirm</button>
       </div>
     </div>
 
@@ -119,7 +119,10 @@
 
     <!-- Last capture info -->
     <div id="last-capture" class="last-capture hidden">
-      <h3>Last Capture</h3>
+      <div class="last-capture-header">
+        <h3>Last Capture</h3>
+        <button type="button" id="btn-edit-last" class="btn btn-secondary btn-sm">Edit</button>
+      </div>
       <div class="last-capture-info">
         <img id="last-capture-thumb" class="thumbnail" alt="Last capture thumbnail">
         <div class="last-capture-details">
@@ -127,13 +130,11 @@
           <span id="last-capture-file" class="detail-file"></span>
         </div>
       </div>
-      <button type="button" id="btn-edit-last" class="btn btn-secondary btn-sm">Edit Last</button>
     </div>
 
     <!-- Bottom actions -->
     <div class="bottom-actions">
-      <button type="button" id="btn-toggle-state" class="btn btn-secondary btn-sm">Toggle Login State</button>
-      <button type="button" id="btn-end-session" class="btn btn-danger btn-sm">End Session</button>
+      <button type="button" id="btn-end-session" class="btn btn-danger">End Session</button>
     </div>
   </div>
 

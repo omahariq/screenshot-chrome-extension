@@ -168,6 +168,7 @@ fieldset.field-group legend {
 .toggle-btn.active {
   background: var(--primary);
   color: #ffffff;
+  font-weight: 700;
 }
 
 .toggle-btn:hover:not(.active) {
@@ -394,7 +395,7 @@ fieldset.field-group legend {
 .prompt-actions {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 /* Small toggle group for inline use */
@@ -404,8 +405,16 @@ fieldset.field-group legend {
 }
 
 .toggle-group-sm .toggle-btn {
-  padding: 4px 10px;
+  padding: 6px 12px;
   font-size: 11px;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.toggle-group-sm .toggle-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 700;
 }
 
 /* ===== DESCRIPTION ===== */
@@ -468,19 +477,25 @@ fieldset.field-group legend {
   padding: 12px;
 }
 
+.last-capture-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
 .last-capture h3 {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .last-capture-info {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  margin-bottom: 8px;
 }
 
 .thumbnail {
@@ -519,6 +534,7 @@ fieldset.field-group legend {
   gap: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--border);
+  justify-content: flex-start;
 }
 
 /* ===== EDIT FORM ===== */

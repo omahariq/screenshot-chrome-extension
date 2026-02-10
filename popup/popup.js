@@ -64,7 +64,6 @@ const lastCaptureThumb = document.getElementById('last-capture-thumb');
 const lastCaptureName = document.getElementById('last-capture-name');
 const lastCaptureFile = document.getElementById('last-capture-file');
 const btnEditLast = document.getElementById('btn-edit-last');
-const btnToggleState = document.getElementById('btn-toggle-state');
 const btnEndSession = document.getElementById('btn-end-session');
 
 const editForm = document.getElementById('edit-form');
@@ -338,7 +337,6 @@ async function init() {
   editForm.addEventListener('submit', handleSaveEdit);
   btnCancelEdit.addEventListener('click', () => showView('capture'));
 
-  btnToggleState.addEventListener('click', handleToggleState);
   btnEndSession.addEventListener('click', handleEndSession);
   btnPickFolder.addEventListener('click', handlePickFolder);
 }
@@ -379,7 +377,6 @@ function updateCaptureView() {
   bannerDate.textContent = session.date;
   counterLabel.textContent = session.mode === MODES.FLOW ? 'Step' : 'Index';
   counterValue.textContent = stepCounter;
-  btnToggleState.textContent = currentCaptureState === LOGIN_STATES.LOGGED_IN ? 'Switch to Logged Out' : 'Switch to Logged In';
 }
 
 async function saveStepCounter() {
@@ -425,13 +422,6 @@ async function handleEndSession() {
   folderPathDisplay.textContent = '~/Downloads/Exemplars/';
   lastCaptureEl.classList.add('hidden');
   showView('setup');
-}
-
-async function handleToggleState() {
-  currentCaptureState = currentCaptureState === LOGIN_STATES.LOGGED_IN
-    ? LOGIN_STATES.LOGGED_OUT : LOGIN_STATES.LOGGED_IN;
-  updateCaptureView();
-  showStatus(`Switched to ${currentCaptureState === LOGIN_STATES.LOGGED_IN ? 'Logged In' : 'Logged Out'}`, 'info');
 }
 
 // ─── Capture Flow ───
