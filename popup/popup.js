@@ -29,7 +29,6 @@ const views = {
 
 const setupForm = document.getElementById('setup-form');
 const modeToggles = document.querySelectorAll('#view-setup .toggle-btn[data-mode]');
-const inputVersion = document.getElementById('input-version');
 const inputDate = document.getElementById('input-date');
 const inputFlowSetName = document.getElementById('input-flow-set-name');
 const labelFlowSet = document.getElementById('label-flow-set');
@@ -38,7 +37,6 @@ const folderPathDisplay = document.getElementById('folder-path-display');
 
 const badgeMode = document.getElementById('badge-mode');
 const bannerName = document.getElementById('banner-name');
-const bannerVersion = document.getElementById('banner-version');
 const bannerState = document.getElementById('banner-state');
 const bannerDate = document.getElementById('banner-date');
 const counterLabel = document.getElementById('counter-label');
@@ -48,8 +46,10 @@ const btnCounterInc = document.getElementById('btn-counter-inc');
 const btnCapture = document.getElementById('btn-capture');
 const captureStatus = document.getElementById('capture-status');
 const pageNamePrompt = document.getElementById('page-name-prompt');
+const loginStateToggle = document.getElementById('login-state-toggle');
 const captureStateBtns = document.querySelectorAll('.capture-state-btn');
 const inputPageName = document.getElementById('input-page-name');
+const inputPageVersion = document.getElementById('input-page-version');
 const btnConfirmName = document.getElementById('btn-confirm-name');
 const descriptionSection = document.getElementById('description-section');
 const descModeButtons = document.querySelectorAll('.desc-mode-btn');
@@ -68,6 +68,7 @@ const btnEndSession = document.getElementById('btn-end-session');
 
 const editForm = document.getElementById('edit-form');
 const editPageName = document.getElementById('edit-page-name');
+const editVersion = document.getElementById('edit-version');
 const editDescription = document.getElementById('edit-description');
 const editStepIndex = document.getElementById('edit-step-index');
 const editStateBtns = document.querySelectorAll('.edit-state-btn');
@@ -344,13 +345,11 @@ async function init() {
 // ─── Session Management ───
 async function handleStartSession(e) {
   e.preventDefault();
-  const version = inputVersion.value.trim();
-  if (!version) { inputVersion.focus(); return; }
   const flowOrSetName = inputFlowSetName.value.trim();
   if (!flowOrSetName) { inputFlowSetName.focus(); return; }
 
   session = {
-    mode: currentMode, version, date: inputDate.value,
+    mode: currentMode, date: inputDate.value,
     language: 'en', flowOrSetName,
   };
   stepCounter = 1;
@@ -372,8 +371,15 @@ function updateCaptureView() {
   if (!session) return;
   badgeMode.textContent = session.mode === MODES.FLOW ? 'Flow' : 'Set';
   bannerName.textContent = session.flowOrSetName;
-  bannerVersion.textContent = session.version;
-  bannerState.textContent = currentCaptureState === LOGIN_STATES.LOGGED_IN ? 'Logged In' : 'Logged Out';
+  
+  // Only show login state for Flow mode
+  if (session.mode === MODES.FLOW) {
+    bannerState.textContent = currentCaptureState === LOGIN_STATES.LOGGED_IN ? 'Logged In' : 'Logged Out';
+    bannerState.style.display = '';
+  } else {
+    bannerState.style.display = 'none';
+  }
+  
   bannerDate.textContent = session.date;
   counterLabel.textContent = session.mode === MODES.FLOW ? 'Step' : 'Index';
   counterValue.textContent = stepCounter;
@@ -392,8 +398,8 @@ async function handleEndSession() {
     const rows = storedManifest[STORAGE_KEYS.MANIFEST] || [];
     if (rows.length > 0) {
       const csvContent = generateCsv(rows);
-      const folder = generateFolderPath(session.date, session.version, session.mode, session.flowOrSetName);
-      const mFilename = manifestFilename(session.date, session.version);
+      const folder = generateFolderPath(session.date, '', session.mode, session.flowOrSetName);
+      const mFilename = manifestFilename(session.date, '');
       if (dirHandle) {
         await saveCsvViaFSA(dirHandle, folder, mFilename, csvContent);
       } else {
@@ -475,10 +481,18 @@ async function handleCapture() {
 }
 
 function showPageNamePrompt() {
-  // Set toggle to current persisted state
-  captureStateBtns.forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.state === currentCaptureState);
-  });
+  // Show/hide login state toggle based on mode
+  if (session.mode === MODES.SET) {
+    loginStateToggle.style.display = 'none';
+    // For sets, always use logged-out as default
+    currentCaptureState = LOGIN_STATES.LOGGED_OUT;
+  } else {
+    loginStateToggle.style.display = 'flex';
+    // Set toggle to current persisted state
+    captureStateBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.state === currentCaptureState);
+    });
+  }
 
   // Update pendingCapture with current state
   pendingCapture.loginState = currentCaptureState;
@@ -500,12 +514,18 @@ function showPageNamePrompt() {
 
 function handlePageNameConfirm() {
   const name = inputPageName.value.trim();
-  if (!name) { inputPageName.focus(); return; }
+  if (!name) { 
+    inputPageName.focus(); 
+    return; 
+  }
+  
+  const version = inputPageVersion.value.trim() || ''; // Optional
   
   // Update pendingCapture with current toggle state (may have changed)
   pendingCapture.loginState = currentCaptureState;
   pendingCapture.urlKey = getUrlKey(pendingCapture.urlPath, currentCaptureState);
   pendingCapture.pageName = name;
+  pendingCapture.version = version;
   
   pageNamePrompt.classList.add('hidden');
   proceedWithCapture();
@@ -539,7 +559,7 @@ async function proceedWithCapture() {
       stepOrIndex: stepCounter,
       pageName: pendingCapture.pageName,
       loginState: pendingCapture.loginState,
-      version: session.version,
+      version: pendingCapture.version, // Now per-page version
       timestamp: pendingCapture.timestamp,
       urlPath: pendingCapture.urlPath,
       devicePixelRatio: captureResult.devicePixelRatio,
@@ -599,8 +619,13 @@ async function handleSaveCapture() {
   try {
     const { thumbnailDataUrl, additionalPartDataUrls } = pendingCapture.captureResult;
 
-    // Generate file path for PDF only
-    const pdfPaths = generateFullPath(session, stepCounter, pendingCapture.pageName, 'pdf');
+    // Generate file path for PDF only (using per-page version)
+    const pdfPaths = generateFullPath(
+      { ...session, version: pendingCapture.version }, 
+      stepCounter, 
+      pendingCapture.pageName, 
+      'pdf'
+    );
 
     // Generate PDF
     let pdfDataUrl = null;
@@ -624,7 +649,7 @@ async function handleSaveCapture() {
     // Create manifest row and persist
     const manifestRow = createManifestRow({
       timestamp: pendingCapture.timestamp,
-      version: session.version,
+      version: pendingCapture.version, // Now per-page version
       mode: session.mode === MODES.FLOW ? 'Flow' : 'Set',
       flowOrSetName: session.flowOrSetName,
       stepOrIndex: stepCounter,
@@ -654,6 +679,7 @@ async function handleSaveCapture() {
 
     const lastCaptureData = {
       pageName: pendingCapture.pageName,
+      version: pendingCapture.version,
       pngFilename: '', pdfFilename, description,
       stepOrIndex: stepCounter, loginState: pendingCapture.loginState,
       urlPath: pendingCapture.urlPath, urlKey: pendingCapture.urlKey,
@@ -702,10 +728,11 @@ async function handleEditLast() {
   if (!data) return;
 
   editPageName.value = data.pageName || '';
+  editVersion.value = data.version || '';
   editDescription.value = data.description || '';
   editStepIndex.value = data.stepOrIndex || 1;
   editStateBtns.forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.state === (data.loginState || session.loginState));
+    btn.classList.toggle('active', btn.dataset.state === (data.loginState || currentCaptureState));
   });
   showView('edit');
 }
@@ -717,16 +744,17 @@ async function handleSaveEdit(e) {
   if (!lastData) return;
 
   const newPageName = editPageName.value.trim();
+  const newVersion = editVersion.value.trim() || '';
   const newDescription = editDescription.value.trim();
   const newStepIndex = parseInt(editStepIndex.value, 10);
   const activeEditState = document.querySelector('.edit-state-btn.active');
-  const newLoginState = activeEditState ? activeEditState.dataset.state : session.loginState;
+  const newLoginState = activeEditState ? activeEditState.dataset.state : currentCaptureState;
 
   if (!newPageName) { editPageName.focus(); return; }
 
   try {
     // Generate new filename
-    const updatedSession = { ...session, loginState: newLoginState };
+    const updatedSession = { ...session, version: newVersion, loginState: newLoginState };
     const newPdfPaths = generateFullPath(updatedSession, newStepIndex, newPageName, 'pdf');
 
     // Update manifest row in storage
@@ -736,7 +764,7 @@ async function handleSaveEdit(e) {
     if (idx >= 0) {
       rows[idx] = createManifestRow({
         timestamp: new Date().toLocaleString(),
-        version: session.version,
+        version: newVersion,
         mode: session.mode === MODES.FLOW ? 'Flow' : 'Set',
         flowOrSetName: session.flowOrSetName,
         stepOrIndex: newStepIndex,
@@ -754,7 +782,7 @@ async function handleSaveEdit(e) {
     // Update stored last capture
     const updatedCapture = {
       ...lastData,
-      pageName: newPageName, description: newDescription,
+      pageName: newPageName, version: newVersion, description: newDescription,
       stepOrIndex: newStepIndex, loginState: newLoginState,
       pngFilename: '', pdfFilename: newPdfPaths.filename,
     };

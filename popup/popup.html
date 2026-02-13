@@ -19,12 +19,6 @@
         </div>
       </fieldset>
 
-      <!-- Version -->
-      <div class="field">
-        <label for="input-version">Version <span class="required">*</span></label>
-        <input type="text" id="input-version" placeholder="e.g. v3.12.0" required>
-      </div>
-
       <!-- Date -->
       <div class="field">
         <label for="input-date">Date</label>
@@ -59,7 +53,6 @@
         <span class="banner-text" id="banner-name">—</span>
       </div>
       <div class="banner-row">
-        <span class="banner-detail" id="banner-version">—</span>
         <span class="banner-detail" id="banner-state">—</span>
         <span class="banner-detail" id="banner-date">—</span>
       </div>
@@ -82,13 +75,17 @@
     <!-- Page name prompt with login state toggle -->
     <div id="page-name-prompt" class="prompt-box hidden">
       <div class="prompt-header">
-        <label for="input-page-name">Name this page:</label>
-        <div class="toggle-group toggle-group-sm">
+        <label for="input-page-name">Name this page: <span class="required">*</span></label>
+        <div id="login-state-toggle" class="toggle-group toggle-group-sm">
           <button type="button" class="toggle-btn capture-state-btn" data-state="logged-in">Logged In</button>
           <button type="button" class="toggle-btn capture-state-btn active" data-state="logged-out">Logged Out</button>
         </div>
       </div>
-      <input type="text" id="input-page-name" placeholder="e.g. Checkout Page">
+      <input type="text" id="input-page-name" placeholder="e.g. Checkout Page" required>
+      <div class="field">
+        <label for="input-page-version">Version</label>
+        <input type="text" id="input-page-version" placeholder="e.g. v3.12.0">
+      </div>
       <div class="prompt-actions">
         <button type="button" id="btn-confirm-name" class="btn btn-primary">Confirm</button>
       </div>
@@ -146,8 +143,13 @@
 
     <form id="edit-form" autocomplete="off">
       <div class="field">
-        <label for="edit-page-name">Page Name</label>
-        <input type="text" id="edit-page-name">
+        <label for="edit-page-name">Page Name <span class="required">*</span></label>
+        <input type="text" id="edit-page-name" required>
+      </div>
+
+      <div class="field">
+        <label for="edit-version">Version</label>
+        <input type="text" id="edit-version" placeholder="e.g. v3.12.0">
       </div>
 
       <div class="field">

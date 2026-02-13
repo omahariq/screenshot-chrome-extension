@@ -87,9 +87,9 @@ body {
 .field label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .required {
@@ -135,9 +135,9 @@ fieldset.field-group {
 fieldset.field-group legend {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
   margin-bottom: 6px;
 }
 
@@ -390,6 +390,8 @@ fieldset.field-group legend {
   font-size: 12px;
   font-weight: 600;
   color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .prompt-actions {
